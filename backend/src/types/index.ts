@@ -6,9 +6,3 @@ export interface IUserResponse {
   updatedAt : Date
 }
 
-
-export type ApiResponse<T> = {
-    success: boolean,
-    message : string,
-    data? : T
-}

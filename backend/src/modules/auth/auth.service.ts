@@ -43,9 +43,9 @@ export const authService = {
     });
 
     return {
-      user : toUserResponse(newUser),
+      user: toUserResponse(newUser),
       accessToken,
-      refreshToken
-    }
+      refreshToken,
+    };
   },
 };
