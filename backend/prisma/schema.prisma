@@ -17,9 +17,11 @@ model User {
   username     String         @unique
   email        String         @unique
   password     String
+  post         Post[]
   refreshToken RefreshToken[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  comments     Comment[]
 
   @@map("users")
 }
@@ -28,9 +30,36 @@ model RefreshToken {
   id     String @id @default(uuid())
   token  String
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   expiresAt DateTime
 
   @@map("refreshToken")
+}
+
+model Post {
+  id          String  @id @default(uuid())
+  title       String
+  description String
+  imageUrl    String?
+
+  userId String
+
+  comment   Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  comment String
+  postId  String
+  userId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
