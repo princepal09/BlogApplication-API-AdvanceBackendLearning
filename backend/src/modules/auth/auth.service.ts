@@ -4,6 +4,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../utils/jwt.helper.js";
+import { toUserResponse } from "./auth.mapper.js";
 import { authRepository } from "./auth.repository.js";
 import { registerUserDTO } from "./auth.schema.js";
 
@@ -41,6 +42,10 @@ export const authService = {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //24 days
     });
 
-    return newUser;
+    return {
+      user : toUserResponse(newUser),
+      accessToken,
+      refreshToken
+    }
   },
 };
