@@ -1,12 +1,12 @@
 import ApiError from "../../utils/ApiError.js";
-import { hashPassword } from "../../utils/auth.helper.js";
+import { comparePassword, hashPassword, hashRefreshToken } from "../../utils/auth.helper.js";
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../utils/jwt.helper.js";
 import { toUserResponse } from "./auth.mapper.js";
 import { authRepository } from "./auth.repository.js";
-import { registerUserDTO } from "./auth.schema.js";
+import { loginUserDTO, registerUserDTO } from "./auth.schema.js";
 
 export const authService = {
   registerUserService: async (body: registerUserDTO) => {
@@ -46,6 +46,41 @@ export const authService = {
       user: toUserResponse(newUser),
       accessToken,
       refreshToken,
+    };
+  },
+
+  loginUserService: async (body: loginUserDTO) => {
+    const { email, password } = body;
+
+    const user = await authRepository.findUserByEmail(email);
+
+    if (!user) {
+      throw new ApiError(409, "User not found, register first");
+    }
+
+    const isPassValid = await comparePassword(password, user.password);
+
+    if (!isPassValid) {
+      throw new ApiError(401, "Invalid Credentials");
+    }
+
+    const userId = user.id as string;
+
+    const newAccessToken = await generateAccessToken(userId);
+    const newRefreshToken = await generateRefreshToken(userId);
+
+    const hashedRefreshToken = await hashRefreshToken(newRefreshToken);
+
+    await authRepository.createRefreshToken({
+      token: hashedRefreshToken,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //24 days
+    });
+
+    return {
+      user: toUserResponse(user),
+      newAccessToken,
+      newRefreshToken,
     };
   },
 };
