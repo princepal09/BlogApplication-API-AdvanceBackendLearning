@@ -42,10 +42,30 @@ export const refreshTokenController = asyncHandler(
 export const currentUserController = asyncHandler(
   async (req: Request, res: Response) => {
     const result = await authService.getCurrentUser(req?.userId as string);
-    
 
     return res
       .status(200)
       .json(new ApiResponse(200, result, "User detailed fetch successfully"));
+  },
+);
+
+export const logoutController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+
+    await authService.logout(refreshToken);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "User Logged out successfully"));
+  },
+);
+
+export const logoutAllController = asyncHandler(
+  async (req: Request, res: Response) => {
+     await authService.logoutAll(req.userId as string);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "Logged out of all devices"));
   },
 );

@@ -12,7 +12,11 @@ import {
 } from "../../utils/jwt.helper.js";
 import { toUserResponse } from "./auth.mapper.js";
 import { authRepository } from "./auth.repository.js";
-import { loginUserDTO, refreshTokenDTO, registerUserDTO } from "./auth.schema.js";
+import {
+  loginUserDTO,
+  refreshTokenDTO,
+  registerUserDTO,
+} from "./auth.schema.js";
 
 export const authService = {
   registerUserService: async (body: registerUserDTO) => {
@@ -91,7 +95,7 @@ export const authService = {
   },
 
   refreshToken: async (body: refreshTokenDTO) => {
-    const {token} = body;
+    const { token } = body;
     if (!token) {
       throw new ApiError(401, "Refresh Token Required");
     }
@@ -116,7 +120,7 @@ export const authService = {
     const newAccessToken = await generateAccessToken(decoded.userId);
     const newRefreshToken = await generateRefreshToken(decoded.userId);
 
-    const newRefreshTokenHashed =await hashRefreshToken(newRefreshToken);
+    const newRefreshTokenHashed = await hashRefreshToken(newRefreshToken);
 
     await authRepository.createRefreshToken({
       token: newRefreshTokenHashed,
@@ -130,16 +134,42 @@ export const authService = {
     };
   },
 
-
-  getCurrentUser : async(userId : string) => {
+  getCurrentUser: async (userId: string) => {
     const user = await authRepository.findUserById(userId);
 
-    if(!user){
-      throw new ApiError(404, "User not found")
+    if (!user) {
+      throw new ApiError(404, "User not found");
     }
     return {
-      user : toUserResponse(user)
+      user: toUserResponse(user),
+    };
+  },
+
+  logout: async (refreshToken: string) => {
+    if (!refreshToken) {
+      throw new ApiError(401, "Refresh token not required");
     }
 
-  }
+    const refreshTokenHashed = await hashRefreshToken(refreshToken);
+
+    const existingToken =
+      await authRepository.findRefreshToken(refreshTokenHashed);
+
+    if (!existingToken) {
+      throw new ApiError(404, "Invalid refresh token");
+    }
+
+    await authRepository.deleteRefreshTokenById(existingToken.id);
+
+    return true;
+  },
+
+  logoutAll: async (userId: string) => {
+    if (!userId) {
+      throw new ApiError(401, "User not authentication");
+    }
+
+    await authRepository.deleteAllRefreshTokenByUser(userId);
+    return true;
+  },
 };
