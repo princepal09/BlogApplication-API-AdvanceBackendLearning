@@ -9,15 +9,18 @@ export const verifyUser = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.cookies?.accessToken;
+    const token =
+      req.cookies?.accessToken ||
+      req.headers.authorization?.replace("Bearer ", "");
 
     if (!token) {
       throw new ApiError(401, "Unatuhorized Request");
     }
 
     const decoded = verifyAccessToken(token);
+    console.log(decoded);
 
-    const user = await authRepository.findUserById(decoded._id);
+    const user = await authRepository.findUserById(decoded.userId);
 
     if (!user) {
       throw new ApiError(401, "Unauthorized access");
@@ -25,8 +28,9 @@ export const verifyUser = async (
 
     req.userId = user.id;
 
-    next();
+    return next();
   } catch (err) {
-    next(new ApiError(401, "Invalid or expired token"));
+    console.error("verifyUser error:", err);
+    next(err);
   }
 };

@@ -11,6 +11,6 @@ export interface IJWTPayload {
 }
 
 export interface AccessTokenPayload {
-  _id: string;
+  userId: string;
   email?: string;
 }

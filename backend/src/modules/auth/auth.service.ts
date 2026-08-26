@@ -129,4 +129,17 @@ export const authService = {
       refreshToken: newRefreshToken,
     };
   },
+
+
+  getCurrentUser : async(userId : string) => {
+    const user = await authRepository.findUserById(userId);
+
+    if(!user){
+      throw new ApiError(404, "User not found")
+    }
+    return {
+      user : toUserResponse(user)
+    }
+
+  }
 };

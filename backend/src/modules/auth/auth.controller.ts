@@ -38,3 +38,14 @@ export const refreshTokenController = asyncHandler(
       .json(new ApiResponse(202, result, "Token Craeated Successfully"));
   },
 );
+
+export const currentUserController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = await authService.getCurrentUser(req?.userId as string);
+    
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, result, "User detailed fetch successfully"));
+  },
+);
