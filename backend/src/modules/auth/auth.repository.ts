@@ -10,6 +10,15 @@ export const authRepository = {
 
     return user;
   },
+  findUserById: async (id: string) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    return user;
+  },
   findUserByEmail: async (email: string) => {
     const user = await prisma.user.findUnique({
       where: {
@@ -41,5 +50,22 @@ export const authRepository = {
     });
 
     return refreshToken;
+  },
+
+  findRefreshToken: async (token: string) => {
+    const refreshToken = await prisma.refreshToken.findUnique({
+      where: {
+        token,
+      },
+    });
+    return refreshToken;
+  },
+
+  deleteRefreshTokenById: async (id: string) => {
+    return await prisma.refreshToken.delete({
+      where: {
+        id,
+      },
+    });
   },
 };

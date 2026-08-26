@@ -6,3 +6,11 @@ export interface IUserResponse {
   updatedAt : Date
 }
 
+export interface IJWTPayload {
+  userId : string
+}
+
+export interface AccessTokenPayload {
+  _id: string;
+  email?: string;
+}

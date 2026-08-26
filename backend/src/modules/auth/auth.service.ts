@@ -1,12 +1,18 @@
+import { IJWTPayload } from "../../types/index.js";
 import ApiError from "../../utils/ApiError.js";
-import { comparePassword, hashPassword, hashRefreshToken } from "../../utils/auth.helper.js";
+import {
+  comparePassword,
+  hashPassword,
+  hashRefreshToken,
+} from "../../utils/auth.helper.js";
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
 } from "../../utils/jwt.helper.js";
 import { toUserResponse } from "./auth.mapper.js";
 import { authRepository } from "./auth.repository.js";
-import { loginUserDTO, registerUserDTO } from "./auth.schema.js";
+import { loginUserDTO, refreshTokenDTO, registerUserDTO } from "./auth.schema.js";
 
 export const authService = {
   registerUserService: async (body: registerUserDTO) => {
@@ -81,6 +87,46 @@ export const authService = {
       user: toUserResponse(user),
       newAccessToken,
       newRefreshToken,
+    };
+  },
+
+  refreshToken: async (body: refreshTokenDTO) => {
+    const {token} = body;
+    if (!token) {
+      throw new ApiError(401, "Refresh Token Required");
+    }
+
+    let decoded;
+
+    try {
+      decoded = verifyRefreshToken(token) as IJWTPayload;
+    } catch (err) {
+      throw new ApiError(401, "Invalid or expired refresh token");
+    }
+
+    const hashedToken = await hashRefreshToken(token);
+
+    const existingToken = await authRepository.findRefreshToken(hashedToken);
+    if (!existingToken) {
+      throw new ApiError(403, "Refresh token not found");
+    }
+
+    await authRepository.deleteRefreshTokenById(existingToken.id);
+
+    const newAccessToken = await generateAccessToken(decoded.userId);
+    const newRefreshToken = await generateRefreshToken(decoded.userId);
+
+    const newRefreshTokenHashed =await hashRefreshToken(newRefreshToken);
+
+    await authRepository.createRefreshToken({
+      token: newRefreshTokenHashed,
+      userId: decoded.userId,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
     };
   },
 };
