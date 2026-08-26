@@ -10,26 +10,27 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../../utils/jwt.helper.js";
+import { IAuthRepository } from "./auth.interface.js";
 import { toUserResponse } from "./auth.mapper.js";
-import { authRepository } from "./auth.repository.js";
 import {
   loginUserDTO,
   refreshTokenDTO,
   registerUserDTO,
 } from "./auth.schema.js";
 
-export const authService = {
-  registerUserService: async (body: registerUserDTO) => {
+export class AuthService {
+  constructor(private repo: IAuthRepository) {}
+
+  async registerUserService(body: registerUserDTO) {
     const { username, email, password } = body;
 
-    const existingUserByUsername =
-      await authRepository.findUserByUsername(username);
+    const existingUserByUsername = await this.repo.findUserByUsername(username);
 
     if (existingUserByUsername) {
       throw new ApiError(400, "User already exists");
     }
 
-    const existingUserByEmail = await authRepository.findUserByEmail(email);
+    const existingUserByEmail = await this.repo.findUserByEmail(email);
 
     if (existingUserByEmail) {
       throw new ApiError(400, "User already exists");
@@ -37,32 +38,29 @@ export const authService = {
 
     const hashedPassword = await hashPassword(password);
 
-    const newUser = await authRepository.createUser(
-      email,
-      username,
-      hashedPassword,
-    );
+    const newUser = await this.repo.createUser(email, username, hashedPassword);
 
     const accessToken = await generateAccessToken(newUser.id);
     const refreshToken = await generateRefreshToken(newUser.id);
 
-    await authRepository.createRefreshToken({
+    await this.repo.createRefreshToken({
       token: refreshToken,
       userId: newUser.id,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //24 days
     });
+
 
     return {
       user: toUserResponse(newUser),
       accessToken,
       refreshToken,
     };
-  },
+  }
 
-  loginUserService: async (body: loginUserDTO) => {
+  async loginUserService(body: loginUserDTO) {
     const { email, password } = body;
 
-    const user = await authRepository.findUserByEmail(email);
+    const user = await this.repo.findUserByEmail(email);
 
     if (!user) {
       throw new ApiError(409, "User not found, register first");
@@ -81,20 +79,21 @@ export const authService = {
 
     const hashedRefreshToken = await hashRefreshToken(newRefreshToken);
 
-    await authRepository.createRefreshToken({
+    await this.repo.createRefreshToken({
       token: hashedRefreshToken,
       userId: user.id,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //24 days
     });
 
+
     return {
       user: toUserResponse(user),
-      newAccessToken,
-      newRefreshToken,
+      accessToken : newAccessToken,
+      refreshToken : newRefreshToken,
     };
-  },
+  }
 
-  refreshToken: async (body: refreshTokenDTO) => {
+  async refreshToken(body: refreshTokenDTO) {
     const { token } = body;
     if (!token) {
       throw new ApiError(401, "Refresh Token Required");
@@ -110,19 +109,19 @@ export const authService = {
 
     const hashedToken = await hashRefreshToken(token);
 
-    const existingToken = await authRepository.findRefreshToken(hashedToken);
+    const existingToken = await this.repo.findRefreshToken(hashedToken);
     if (!existingToken) {
       throw new ApiError(403, "Refresh token not found");
     }
 
-    await authRepository.deleteRefreshTokenById(existingToken.id);
+    await this.repo.deleteRefreshTokenById(existingToken.id);
 
     const newAccessToken = await generateAccessToken(decoded.userId);
     const newRefreshToken = await generateRefreshToken(decoded.userId);
 
     const newRefreshTokenHashed = await hashRefreshToken(newRefreshToken);
 
-    await authRepository.createRefreshToken({
+    await this.repo.createRefreshToken({
       token: newRefreshTokenHashed,
       userId: decoded.userId,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -132,10 +131,10 @@ export const authService = {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
-  },
+  }
 
-  getCurrentUser: async (userId: string) => {
-    const user = await authRepository.findUserById(userId);
+  async getCurrentUser(userId: string) {
+    const user = await this.repo.findUserById(userId);
 
     if (!user) {
       throw new ApiError(404, "User not found");
@@ -143,33 +142,32 @@ export const authService = {
     return {
       user: toUserResponse(user),
     };
-  },
+  }
 
-  logout: async (refreshToken: string) => {
+  async logout(refreshToken: string) {
     if (!refreshToken) {
       throw new ApiError(401, "Refresh token not required");
     }
 
     const refreshTokenHashed = await hashRefreshToken(refreshToken);
 
-    const existingToken =
-      await authRepository.findRefreshToken(refreshTokenHashed);
+    const existingToken = await this.repo.findRefreshToken(refreshTokenHashed);
 
     if (!existingToken) {
       throw new ApiError(404, "Invalid refresh token");
     }
 
-    await authRepository.deleteRefreshTokenById(existingToken.id);
+    await this.repo.deleteRefreshTokenById(existingToken.id);
 
     return true;
-  },
+  }
 
-  logoutAll: async (userId: string) => {
+  async logoutAll(userId: string) {
     if (!userId) {
       throw new ApiError(401, "User not authentication");
     }
 
-    await authRepository.deleteAllRefreshTokenByUser(userId);
+    await this.repo.deleteAllRefreshTokenByUser(userId);
     return true;
-  },
-};
+  }
+}

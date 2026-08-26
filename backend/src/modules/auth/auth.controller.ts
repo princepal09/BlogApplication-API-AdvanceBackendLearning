@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/AsyncHandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
-import { authService } from "./auth.service.js";
 import ApiError from "../../utils/ApiError.js";
-import { authRepository } from "./auth.repository.js";
+import { authService } from "./container.js";
+import { destroyCookie, setCookies } from "../../utils/auth.helper.js";
 
 export const registerUserController = asyncHandler(
   async (req: Request, res: Response) => {
     const result = await authService.registerUserService(req.body);
+
+    setCookies(res, result.accessToken, result.refreshToken);
 
     return res
       .status(200)
@@ -23,6 +25,8 @@ export const loginUserController = asyncHandler(
 
     const result = await authService.loginUserService(req.body);
 
+    setCookies(res, result.accessToken, result.refreshToken);
+
     return res
       .status(200)
       .json(new ApiResponse(200, result, "Account created successfully"));
@@ -31,8 +35,9 @@ export const loginUserController = asyncHandler(
 
 export const refreshTokenController = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await authRepository.createRefreshToken(req.body);
+    const result = await authService.refreshToken(req.body);
 
+    setCookies(res, result.accessToken, result.refreshToken);
     return res
       .status(202)
       .json(new ApiResponse(202, result, "Token Craeated Successfully"));
@@ -55,6 +60,8 @@ export const logoutController = asyncHandler(
 
     await authService.logout(refreshToken);
 
+    destroyCookie(res);
+
     return res
       .status(200)
       .json(new ApiResponse(200, null, "User Logged out successfully"));
@@ -63,7 +70,8 @@ export const logoutController = asyncHandler(
 
 export const logoutAllController = asyncHandler(
   async (req: Request, res: Response) => {
-     await authService.logoutAll(req.userId as string);
+    await authService.logoutAll(req.userId as string);
+    destroyCookie(res);
     return res
       .status(200)
       .json(new ApiResponse(200, null, "Logged out of all devices"));

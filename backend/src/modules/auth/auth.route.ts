@@ -14,6 +14,7 @@ import {
   registerUserSchema,
 } from "./auth.schema.js";
 import { verifyUser } from "../../middlewares/auth.middleware.js";
+import { authService } from "./container.js";
 
 const router = express.Router();
 
@@ -24,8 +25,12 @@ router.post(
   validate(refreshTokenSchema),
   refreshTokenController,
 );
-router.get("/me", verifyUser, currentUserController);
-router.post("/logout", verifyUser, logoutController);
-router.post("/logout-all-devices", verifyUser, logoutAllController);
+router.get("/me", verifyUser(authService), currentUserController);
+router.post("/logout", verifyUser(authService), logoutController);
+router.post(
+  "/logout-all-devices",
+  verifyUser(authService),
+  logoutAllController,
+);
 
 export default router;
