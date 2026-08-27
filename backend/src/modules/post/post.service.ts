@@ -25,4 +25,10 @@ export class PostService {
 
     return post;
   }
+
+  async gerPostsByUserId(userId: string) {
+    const posts = await this.repo.gerPostsByUserId(userId);
+    
+    return posts;
+  }
 }

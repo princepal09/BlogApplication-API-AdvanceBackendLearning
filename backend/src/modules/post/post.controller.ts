@@ -21,3 +21,17 @@ export const createPostController = asyncHandler(
     return res.json(new ApiResponse(201, result, "Post created successfully"));
   },
 );
+
+
+export const getUserPosts =  asyncHandler(
+  async (req:Request, res:Response) => {
+    const result = await postService.gerPostsByUserId(req.userId as string);
+
+    return res.json(
+      new ApiResponse(
+        200, result, "User Post fetched successfully"
+      )
+    )
+
+  }
+)

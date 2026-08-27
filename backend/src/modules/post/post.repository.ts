@@ -31,5 +31,16 @@ export class PostRepository implements IPostRepository {
     return post;
   }
 
+  async gerPostsByUserId (userId : string){
+    const posts = await prisma.post.findMany({
+      where : {
+        userId
+      }
+
+    })
+    return posts;
+
+  }
+
   
 }

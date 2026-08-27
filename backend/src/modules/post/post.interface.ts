@@ -5,4 +5,9 @@ export interface IPostRepository {
     userId: string,
     imageUrl?: string,
   ): Promise<any>;
+
+  gerPostsByUserId(
+   userId : string
+  ): Promise<any>;
+
 }
