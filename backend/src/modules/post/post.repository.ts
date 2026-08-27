@@ -31,16 +31,39 @@ export class PostRepository implements IPostRepository {
     return post;
   }
 
-  async gerPostsByUserId (userId : string){
+  async gerPostsByUserId(userId: string) {
     const posts = await prisma.post.findMany({
-      where : {
-        userId
-      }
-
-    })
+      where: {
+        userId,
+      },
+    });
     return posts;
-
   }
 
-  
+  async getPostByUserIdAndPostId(postId: string, userId: string) {
+    const post = await prisma.post.findFirst({
+      where: {
+        id: postId,
+        userId,
+      },
+    });
+
+    return post;
+  }
+
+  async updatePost(postId: string, title: string, description: string, userId: string): Promise<any> {
+    const updatedPost = await prisma.post.update({
+      where : {
+        id : postId
+      },
+      data : {
+        title,
+        description
+      }
+    })
+
+    return updatedPost;
+  }
+
+
 }

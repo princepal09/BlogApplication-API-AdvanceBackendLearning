@@ -2,6 +2,7 @@ import { asyncHandler } from "../../utils/AsyncHandler.js";
 import { Request, Response } from "express";
 import postService from "./post.container.js";
 import ApiResponse from "../../utils/ApiResponse.js";
+import ApiError from "../../utils/ApiError.js";
 
 export const createPostController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -22,16 +23,30 @@ export const createPostController = asyncHandler(
   },
 );
 
-
-export const getUserPosts =  asyncHandler(
-  async (req:Request, res:Response) => {
+export const getUserPosts = asyncHandler(
+  async (req: Request, res: Response) => {
     const result = await postService.gerPostsByUserId(req.userId as string);
 
     return res.json(
-      new ApiResponse(
-        200, result, "User Post fetched successfully"
-      )
-    )
+      new ApiResponse(200, result, "User Post fetched successfully"),
+    );
+  },
+);
 
+export const updatePost = asyncHandler(async (req: Request, res: Response) => {
+  const { postId } = req.params;
+  console.log(postId)
+
+  if(!postId){
+    throw new ApiError(404, "Post Id not found")
   }
-)
+  const result = await postService.updatePostById(
+    req.body,
+    req.userId as string,
+    postId as string,
+  );
+  
+  return res.status(200).json(
+    new ApiResponse(200, result,  "Post Updated successfully")
+  )
+});

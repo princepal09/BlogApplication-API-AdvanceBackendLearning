@@ -6,8 +6,13 @@ export interface IPostRepository {
     imageUrl?: string,
   ): Promise<any>;
 
-  gerPostsByUserId(
-   userId : string
-  ): Promise<any>;
+  gerPostsByUserId(userId: string): Promise<any>;
+  getPostByUserIdAndPostId(postId: string, userId: string): Promise<any>;
 
+  updatePost(
+    postId: string,
+    title: string,
+    description: string,
+    userId: string,
+  ): Promise<any>;
 }
