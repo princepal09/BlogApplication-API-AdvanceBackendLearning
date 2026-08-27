@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/AsyncHandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import ApiError from "../../utils/ApiError.js";
-import { authService } from "./container.js";
+import { authService } from "./auth.container.js";
 import { destroyCookie, setCookies } from "../../utils/auth.helper.js";
 
 export const registerUserController = asyncHandler(
