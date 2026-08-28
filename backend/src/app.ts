@@ -5,6 +5,7 @@ import { FRONTEND_URL } from "./config/config.js";
 import errorMiddleware from "./middlewares/globalErrorHandler.middleware.js";
 import authRouter from "./modules/auth/auth.route.js";
 import postRouter from "./modules/post/post.route.js";
+import commentRouter from "./modules/comment/comment.route.js";
 
 const app = express();
 
@@ -18,8 +19,9 @@ app.use(
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/post", postRouter);
+app.use("/api/v1/comment", commentRouter);
 
-app.get("/health-check", (req: Request, res: Response) => {
+app.get("/health-check", (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     message: "APi is working fine!",
