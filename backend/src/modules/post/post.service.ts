@@ -51,4 +51,16 @@ export class PostService {
 
     return updatedPost;
   }
+
+  async deletePost(postId : string, userId : string){
+    const post = await this.repo.getPostByUserIdAndPostId(postId, userId)
+    if(!post){
+      throw new ApiError(404, "Post not found")
+    }
+
+    await this.repo.deletePost(postId);
+
+    return true
+
+  }
 }

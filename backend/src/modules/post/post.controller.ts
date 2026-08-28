@@ -35,18 +35,36 @@ export const getUserPosts = asyncHandler(
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const { postId } = req.params;
-  console.log(postId)
+  console.log(postId);
 
-  if(!postId){
-    throw new ApiError(404, "Post Id not found")
+  if (!postId) {
+    throw new ApiError(404, "Post Id not found");
   }
   const result = await postService.updatePostById(
     req.body,
     req.userId as string,
     postId as string,
   );
-  
-  return res.status(200).json(
-    new ApiResponse(200, result,  "Post Updated successfully")
-  )
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "Post Updated successfully"));
+});
+
+export const deletePost = asyncHandler(async (req: Request, res: Response) => {
+  const { postId } = req.params;
+  const { userId } = req;
+
+  if (!postId) {
+    throw new ApiError(404, "Post Id not found");
+  }
+  if (!req.userId) {
+    throw new ApiError(401, "Not authorized");
+  }
+
+  await postService.deletePost(postId as string, userId as string);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Post deleted successfully"));
 });

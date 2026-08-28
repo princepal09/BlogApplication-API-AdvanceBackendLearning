@@ -11,8 +11,12 @@ export interface IPostRepository {
 
   updatePost(
     postId: string,
-    title: string,
-    description: string,
-    userId: string,
+    title?: string ,
+    description?: string ,
+    userId?: string,
   ): Promise<any>;
+
+  deletePost(postId : string) : Promise<any>
 }
+
+

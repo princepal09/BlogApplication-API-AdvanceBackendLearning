@@ -51,7 +51,7 @@ export class PostRepository implements IPostRepository {
     return post;
   }
 
-  async updatePost(postId: string, title: string, description: string, userId: string): Promise<any> {
+  async updatePost(postId: string, title?: string , description?: string, userId?: string): Promise<any> {
     const updatedPost = await prisma.post.update({
       where : {
         id : postId
@@ -63,6 +63,14 @@ export class PostRepository implements IPostRepository {
     })
 
     return updatedPost;
+  }
+
+  async deletePost(postId: string): Promise<any> {
+    await prisma.post.delete({
+      where  : {
+        id:postId
+      }
+    })
   }
 
 
