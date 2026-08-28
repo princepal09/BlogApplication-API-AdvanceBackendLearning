@@ -11,10 +11,10 @@ export const createPostSchema = z
 
 export const updatePostSchema = z
   .object({
-    title: z.string().min(1, "Post title cannot be empty"),
+    title: z.string().min(1, "Post title cannot be empty").optional(),
     description: z
       .string()
-      .min(10, "Post description must be atleast 10 characters long"),
+      .min(10, "Post description must be atleast 10 characters long").optional(),
   })
   .strict();
 
