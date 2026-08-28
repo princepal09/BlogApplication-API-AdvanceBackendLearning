@@ -68,3 +68,11 @@ export const deletePost = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, "Post deleted successfully"));
 });
+
+export const allPosts = asyncHandler(async (req: Request, res: Response) => {
+  const posts = await postService.getAllPosts();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, posts, "Post fetched successfully"));
+});

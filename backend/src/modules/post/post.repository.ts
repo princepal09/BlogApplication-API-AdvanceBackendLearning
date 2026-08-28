@@ -73,5 +73,11 @@ export class PostRepository implements IPostRepository {
     })
   }
 
+  async getAllPosts(): Promise<any> {
+    const posts = await prisma.post.findMany();
+
+    return posts;
+  }
+
 
 }

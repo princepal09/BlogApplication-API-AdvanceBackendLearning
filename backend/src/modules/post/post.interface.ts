@@ -17,6 +17,8 @@ export interface IPostRepository {
   ): Promise<any>;
 
   deletePost(postId : string) : Promise<any>
+
+  getAllPosts() : Promise<any>
 }
 
 
