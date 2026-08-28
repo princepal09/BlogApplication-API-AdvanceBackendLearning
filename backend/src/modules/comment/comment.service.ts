@@ -25,4 +25,13 @@ export class CommentService {
     const comments = await this.repo.getAllCommentsByPost(postId);
     return comments;
   }
+//   async deleteComment(commentId: string, userId: string) {
+//     const post = await this.repo.getPost(postId);
+
+//     if (!post) {
+//       throw new ApiError(404, "Post not found");
+//     }
+//     const comments = await this.repo.getAllCommentsByPost(postId);
+//     return comments;
+//   }
 }
