@@ -38,11 +38,10 @@ export class CommentRepository implements ICommentRepository {
     return post;
   }
 
-  async deleteComment(commentId: string, userId  : string): Promise<any> {
+  async deleteComment(commentId: string): Promise<any> {
       await prisma.comment.delete({
         where : {
             id : commentId,
-            userId
         }
       })
 
@@ -61,5 +60,15 @@ export class CommentRepository implements ICommentRepository {
       })
 
       return updatedComment;
+  }
+
+  async getComment(commentId: string): Promise<any> {
+    const comment = await prisma.comment.findFirst({
+      where : {
+        id: commentId
+      }
+    })
+
+    return comment;
   }
 }

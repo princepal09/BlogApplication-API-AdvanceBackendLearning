@@ -42,3 +42,24 @@ export const getAllCommentsByPost = asyncHandler(
       .json(new ApiResponse(200, result, "Comments fetched successfully"));
   },
 );
+
+export const deleteComment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.userId;
+    if (!userId) {
+      throw new ApiResponse(401, "Not Authorized");
+    }
+
+    const { commentId, postId} = req.params;
+
+    if (!commentId) {
+      throw new ApiResponse(404, "comment id not found");
+    }
+
+     await commentService.deleteComment(userId, commentId as string, postId as string);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "Comment delete successfully"));
+  },
+);
